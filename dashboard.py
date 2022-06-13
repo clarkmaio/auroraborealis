@@ -4,8 +4,9 @@ import pandas as pd
 from datetime import datetime
 import numpy as np
 
-import plotly.figure_factory as ff
 import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 
 from data_scraper import DataScraper
 
@@ -24,6 +25,7 @@ class DashBoard():
     def load_data(self):
         data_scraper = DataScraper()
         self.data = data_scraper.load_data()
+        self.raw_data = self.data.copy()
 
     def generate_dashboard(self):
         self.side_bar()
@@ -36,17 +38,12 @@ class DashBoard():
         '''
 
         st.sidebar.markdown("## Sidebar")
-        self.train_test_split_date = st.sidebar.date_input(label = 'Train/test split', value=datetime(2020, 1, 1))
-        self.train_test_split_date = pd.to_datetime(self.train_test_split_date)
-
 
         st.sidebar.markdown("#")
-        self.resolution = st.sidebar.selectbox(label = 'Resolution', options=['YS','H', 'D','MS'])
+        self.resolution = st.sidebar.selectbox(label = 'Resolution', options=['YS','H', 'D','MS'], index=0)
 
-        st.sidebar.markdown("#")
-        if st.sidebar.button(label='Run model'):
-            st.sidebar.write('Run')
-
+        # Dwonload data
+        st.sidebar.download_button(label='Download data', key='download', data=self.convert_df(self.data), file_name='AuroraBoralis.csv', mime='text/csv')
 
 
 
@@ -55,31 +52,87 @@ class DashBoard():
         Create main page
         '''
 
-        self.title('Aurora Borealis', background_color='aquamarine')
+        # self.title('Aurora Borealis', background_color='aquamarine')
+        st.markdown('# Aurora borealis')
+
+        self._preprocess_data()
 
         st.markdown('#')
-        self.train_test_split()
-
         self._display_plot_timeseries()
 
+        c1, c2 = st.columns(2)
+        with c1:
+            self._display_plot_scatter()
 
-    def _preprocess(self):
+        with c2:
+            self._display_plot_monthly_seasonality()
+
+
+    def _preprocess_data(self):
         '''Format data according to input params'''
         self.data = self.data.resample(self.resolution).mean()
 
 
-    def train_test_split(self):
-        self._preprocess()
-        self.X_train = self.data.loc[self.data.index < self.train_test_split_date, ['Kp']]
-        self.X_test = self.data.loc[self.data.index >= self.train_test_split_date, ['Kp']]
-
-
     def _display_plot_timeseries(self):
-        # Generate plot
-        fig = px.line(self.data, y=['Kp'])
-        fig.update_xaxes(rangeslider_visible=True)
+        '''
+        Plot timeseries Kp, Ap
+        '''
+
+        fig = make_subplots(rows=2, cols=1, subplot_titles=['Kp', 'Ap'], shared_xaxes=True)
+
+        fig.add_trace(
+            go.Scattergl(x=self.data.index, y=self.data['Kp'],
+                       mode='lines',
+                       name='Kp',
+                       line={'color': 'blue'}),
+            row=1, col=1
+        )
+
+        fig.add_trace(
+            go.Scattergl(x=self.data.index, y=self.data['ap'],
+                       mode='lines',
+                       name='Ap',
+                       line={'color': 'red'}),
+            row=2, col=1
+        )
 
         # display
+        st.plotly_chart(fig, use_container_width=True)
+
+
+
+
+    def _display_plot_scatter(self):
+        '''Plot scatter Kp/Ap'''
+        fig = px.scatter(self.data, x='Kp', y='ap', title='Kp-Ap scatter')
+        st.plotly_chart(fig, use_container_width=True, render_mode='webgl')
+
+    def _display_plot_monthly_seasonality(self):
+        '''Plot monthly seasonality'''
+
+        data_month = self.raw_data.copy()
+        data_month['month'] = data_month.index.month
+        data_month = data_month.groupby('month').mean()
+
+        fig = make_subplots(specs=[[{'secondary_y': True}]], subplot_titles=['Monthly seasonality'])
+        fig.add_trace(
+            go.Scatter(x=data_month.index, y=data_month['Kp'], name='Kp', line={'color': 'blue'}),
+            secondary_y=False
+        )
+
+        fig.add_trace(
+            go.Scatter(x=data_month.index, y=data_month['ap'], name='Ap', line={'color': 'red'}),
+            secondary_y=True
+        )
+
+        # x axis label
+        fig.update_xaxes(title_text='Month')
+
+        # y axis label
+        fig.update_yaxes(title_text='Kp', secondary_y=False)
+        fig.update_yaxes(title_text='Ap', secondary_y=True)
+
+        # Render
         st.plotly_chart(fig, use_container_width=True)
 
 
@@ -87,8 +140,9 @@ class DashBoard():
     def title(self, text: str, background_color: str = 'tomato', text_color: str = 'white') -> None:
         st.markdown(f"<h1 style='text-align: center; color: {text_color}; background-color: {background_color}'>{text}</h1>", unsafe_allow_html=True)
 
-
-
+    @st.cache
+    def convert_df(self, df: pd.DataFrame):
+        return df.to_csv().encode('utf-8')
 
 
 
