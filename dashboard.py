@@ -3,6 +3,8 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import numpy as np
+from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
+import matplotlib.pyplot as plt
 
 import plotly.express as px
 from plotly.subplots import make_subplots
@@ -60,12 +62,9 @@ class DashBoard():
         st.markdown('#')
         self._display_plot_timeseries()
 
-        c1, c2 = st.columns(2)
-        with c1:
-            self._display_plot_scatter()
-
-        with c2:
-            self._display_plot_monthly_seasonality()
+        self._display_plot_scatter()
+        self._display_plot_monthly_seasonality()
+        self._display_plot_yearly_acf_pacf()
 
 
     def _preprocess_data(self):
@@ -134,6 +133,25 @@ class DashBoard():
 
         # Render
         st.plotly_chart(fig, use_container_width=True)
+
+
+    def _display_plot_yearly_acf_pacf(self):
+        '''Plot yearly pacf'''
+
+        data_year = self.raw_data.resample('Y').mean()
+
+        # Plot
+        fig, ax = plt.subplots(2, 1, sharex=True)
+        plot_pacf(x=data_year['Kp'], ax=ax[0])
+        ax[0].set_title('PACF Kp', fontweight='bold')
+        ax[0].grid(linestyle=':')
+
+        plot_acf(x=data_year['Kp'], ax=ax[1])
+        ax[1].set_title('ACF Kp', fontweight='bold')
+        ax[1].grid(linestyle=':')
+
+        # Render
+        st.pyplot(fig=fig)
 
 
 

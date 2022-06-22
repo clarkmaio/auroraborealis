@@ -116,4 +116,17 @@ if __name__ == '__main__':
     data_scraper = DataScraper()
     data = data_scraper.load_data()
 
-    data.loc[datetime(2020, 1, 1):, :]
+    from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
+    import matplotlib.pyplot as plt
+    data_year = data.resample('Y').mean()
+
+    fig, ax = plt.subplots(2, 1, sharex=True)
+    plot_pacf(x=data_year['Kp'], ax=ax[0])
+    ax[0].set_title('PACF Kp', fontweight='bold')
+    ax[0].grid(linestyle=':')
+
+    plot_acf(x=data_year['Kp'], ax=ax[1])
+    ax[1].set_title('ACF Kp', fontweight='bold')
+    ax[1].grid(linestyle=':')
+
+    fig
