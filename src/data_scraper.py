@@ -88,7 +88,7 @@ class DataScraper(object):
     def _interpolate(self, df):
         '''Interpolate to hourly timeseries'''
 
-        df = df.resample('H').mean()
+        df = df.resample('h').mean()
         df = df.interpolate(method = 'cubic')
         df = df.clip(0) # Make sure no negative values have been introduced during interpolation
         return df
@@ -115,18 +115,4 @@ if __name__ == '__main__':
 
     data_scraper = DataScraper()
     data = data_scraper.load_data()
-
-    from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
-    import matplotlib.pyplot as plt
-    data_year = data.resample('Y').mean()
-
-    fig, ax = plt.subplots(2, 1, sharex=True)
-    plot_pacf(x=data_year['Kp'], ax=ax[0])
-    ax[0].set_title('PACF Kp', fontweight='bold')
-    ax[0].grid(linestyle=':')
-
-    plot_acf(x=data_year['Kp'], ax=ax[1])
-    ax[1].set_title('ACF Kp', fontweight='bold')
-    ax[1].grid(linestyle=':')
-
-    fig
+    print(data.head())

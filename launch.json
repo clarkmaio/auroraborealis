@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",  // o il tipo di debugger che stai usando
+            "request": "launch",
+            "name": "Nome della configurazione",
+            "program": "${workspaceFolder}/app.js",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        }
+    ]
+}
