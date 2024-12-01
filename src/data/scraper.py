@@ -19,7 +19,7 @@ class DataScraper(object):
     _url: str = 'https://www-app3.gfz-potsdam.de/kp_index/Kp_ap_since_1932.txt'
 
 
-    def load_data(self, st_date: datetime = datetime(1932, 1, 1, 0), en_date: datetime = datetime.now(), data_quality_filter: tuple = (0,1,2)) -> pd.DataFrame:
+    def load_data(self, start_date: datetime = datetime(1932, 1, 1, 0), end_date: datetime = datetime.now(), data_quality_filter: tuple = (0,1,2)) -> pd.DataFrame:
         '''Load data from txt file and parse values into pandas data frame'''
 
         self.data_quality_filter = data_quality_filter
@@ -29,9 +29,9 @@ class DataScraper(object):
         df = self._interpolate(df)
 
         # filter date
-        df = df.loc[st_date:en_date, :]
+        df = df.loc[start_date:end_date, :]
 
-        return df
+        return df.reset_index()
 
 
 
@@ -88,10 +88,14 @@ class DataScraper(object):
     def _interpolate(self, df):
         '''Interpolate to hourly timeseries'''
 
-        df = df.resample('h').mean()
-        df = df.interpolate(method = 'cubic')
-        df = df.clip(0) # Make sure no negative values have been introduced during interpolation
-        return df
+        pd.set_option('future.no_silent_downcasting', True)
+        df_resample = df[['Kp', 'ap']].resample('h').mean()
+        df_resample = df_resample.interpolate(method = 'cubic')
+        df_resample = df_resample.clip(0) # Make sure no negative values have been introduced during interpolation
+
+        df_resample = pd.merge(df_resample, df[['D']], left_index=True, right_index=True, how='left')
+        df_resample.ffill(inplace=True)
+        return df_resample
 
 
     def _preprocess(self, df):
@@ -104,10 +108,9 @@ class DataScraper(object):
         df = df.query('Kp>=0')
 
         # drop useless columns
-        df = df[['Kp', 'ap']]
+        df = df[['Kp', 'ap', 'D']]
 
-        df = df.astype(float)
-
+        df[['Kp', 'ap']] = df[['Kp', 'ap']].astype(float)
         return df
 
 
