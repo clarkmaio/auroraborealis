@@ -17,6 +17,9 @@ from typing import Dict, List
 ds = DataScraper()
 app = FastAPI()
 
+test_df = ds.load_data()
+
+
 
 def from_df_to_json(df: pd.DataFrame) -> Dict:
     '''Convert DataFrame to JSON ready to be returned by API'''
@@ -33,7 +36,6 @@ async def root():
 def get_history() -> Dict:
     raw_data = ds.load_data()
     return from_df_to_json(df=raw_data)
-    #return {'Output': 'this'}
 
 @app.get("/get_interval", response_model=List[dict])
 def get_interval(start: str, end: str):
