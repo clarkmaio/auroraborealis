@@ -26,7 +26,7 @@ def from_df_to_json(df: pd.DataFrame) -> Dict:
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome in Aurora Borealis API! asdasd"}
+    return {"message": "Welcome in Aurora Borealis API!"}
 
 @app.get("/get_history")
 async def get_history() -> Dict:
