@@ -30,9 +30,9 @@ async def root():
 
 @app.get("/get_history")
 async def get_history() -> Dict:
-    #raw_data = DataScraper().load_data()
-    #return from_df_to_json(df=raw_data)
-    return {'message': 'history'}
+    raw_data = DataScraper().load_data()
+    return from_df_to_json(df=raw_data)
+
 
 @app.get("/get_interval", response_model=List[dict])
 async def get_interval(start: str, end: str):
