@@ -34,7 +34,11 @@ async def root():
 
 @app.get("/get_history", response_model=List[dict])
 def get_history() -> Dict:
-    raw_data = ds.load_data()
+    #raw_data = ds.load_data()
+    raw_data = pd.DataFrame({
+        'a': [1, 2, 3],
+        'b': [4, 5, 6],
+    })
     return from_df_to_json(df=raw_data)
 
 @app.get("/get_interval", response_model=List[dict])
