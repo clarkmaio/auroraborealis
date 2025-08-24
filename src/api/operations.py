@@ -28,7 +28,7 @@ def from_df_to_json(df: pd.DataFrame) -> Dict:
 async def root():
     return {"message": "Welcome in Aurora Borealis API!"}
 
-@app.get("/get_history", response_model=List[dict])
+@app.get("/get_history")
 async def get_history() -> Dict:
     #raw_data = DataScraper().load_data()
     #return from_df_to_json(df=raw_data)
