@@ -36,6 +36,7 @@ async def root():
 def get_history() -> Dict:
     #raw_data = ds.load_data()
     raw_data = pd.DataFrame({
+        'valuedate': pd.date_range(start='2023-01-01', periods=3, freq='D'),
         'a': [1, 2, 3],
         'b': [4, 5, 6],
     })
