@@ -14,12 +14,8 @@ import pandas as pd
 import json
 from typing import Dict, List
 
-ds = DataScraper()
+
 app = FastAPI()
-
-test_df = ds.load_data()
-print(test_df.head())
-
 
 def from_df_to_json(df: pd.DataFrame) -> Dict:
     '''Convert DataFrame to JSON ready to be returned by API'''
@@ -33,28 +29,23 @@ async def root():
     return {"message": "Welcome in Aurora Borealis API!"}
 
 @app.get("/get_history", response_model=List[dict])
-def get_history() -> Dict:
-    #raw_data = ds.load_data()
-    raw_data = pd.DataFrame({
-        'valuedate': pd.date_range(start='2023-01-01', periods=3, freq='D'),
-        'a': [1, 2, 3],
-        'b': [4, 5, 6],
-    })
+async def get_history() -> Dict:
+    #raw_data = DataScraper().load_data()
     #return from_df_to_json(df=raw_data)
     return {'message': 'history'}
 
 @app.get("/get_interval", response_model=List[dict])
-def get_interval(start: str, end: str):
+async def get_interval(start: str, end: str):
     start_date = pd.to_datetime(start, format='%Y%m%d')
     end_date = pd.to_datetime(end, format='%Y%m%d').replace(hour=23)
-    interval = ds.load_data(start_date=start_date, end_date=end_date)
+    interval = DataScraper().load_data(start_date=start_date, end_date=end_date)
     return from_df_to_json(df=interval)
 
 @app.get("/get_lastdays", response_model=List[dict])
-def get_lastdays(days: int):
+async def get_lastdays(days: int):
     end_date = datetime.now().replace(minute=0, second=0, microsecond=0)
     start_date = end_date - timedelta(days=days)
-    interval = ds.load_data(start_date=start_date, end_date=end_date)
+    interval = DataScraper().load_data(start_date=start_date, end_date=end_date)
     return from_df_to_json(df=interval)
 
 
