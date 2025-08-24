@@ -18,7 +18,7 @@ ds = DataScraper()
 app = FastAPI()
 
 test_df = ds.load_data()
-
+print(test_df.head())
 
 
 def from_df_to_json(df: pd.DataFrame) -> Dict:
