@@ -40,7 +40,8 @@ def get_history() -> Dict:
         'a': [1, 2, 3],
         'b': [4, 5, 6],
     })
-    return from_df_to_json(df=raw_data)
+    #return from_df_to_json(df=raw_data)
+    return {'message': 'history'}
 
 @app.get("/get_interval", response_model=List[dict])
 def get_interval(start: str, end: str):
